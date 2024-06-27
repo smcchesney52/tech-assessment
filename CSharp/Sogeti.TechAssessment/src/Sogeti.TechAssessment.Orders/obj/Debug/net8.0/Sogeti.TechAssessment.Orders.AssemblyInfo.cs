@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Sogeti.TechAssessment.Orders")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5cc19d8ee794d03cd5bfbfd6d54922bcc0b01550")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b51b8a82ed67e487c85ffca3894daa2098a4ad74")]
 [assembly: System.Reflection.AssemblyProductAttribute("Sogeti.TechAssessment.Orders")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Sogeti.TechAssessment.Orders")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
