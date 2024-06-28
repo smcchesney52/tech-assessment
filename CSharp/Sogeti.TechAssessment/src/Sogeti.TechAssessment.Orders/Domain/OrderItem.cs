@@ -8,11 +8,12 @@ namespace Sogeti.TechAssessment.Orders.Domain
         {
         }
 
-        internal OrderItem(Guid orderId, Guid productId, byte itemNumber, int quantity, decimal unitPrice,
+        internal OrderItem(Guid orderId, Guid productId, int itemNumber, int quantity, decimal unitPrice,
             string addUser, DateTimeOffset? addDate = null) : base(addUser, addDate)
         {
             ValidateGuid(orderId, "Order ID");
             ValidateGuid(productId, "Product ID");
+            ValidateValueRange(itemNumber, "Order Item Number", 1, int.MaxValue);
             ValidateValueRange(quantity, "Order Item Quantity", 1, int.MaxValue);
             ValidateValueRange(unitPrice, "Order Item Unit Price", 0.01m, decimal.MaxValue);
 
@@ -27,12 +28,26 @@ namespace Sogeti.TechAssessment.Orders.Domain
         
         public Guid ProductId { get; private set; }
         
-        public byte ItemNumber { get; private set; }
+        public int ItemNumber { get; internal set; }
         
         public int Quantity { get; private set; }
         
         public decimal UnitPrice { get; private set; }
 
         public decimal TotalPrice => Quantity * UnitPrice;
+
+        public void UpdateQuantity(int quantity, string updateUser, DateTimeOffset? updateDate = null)
+        {
+            ValidateValueRange(quantity, "Order Item Quantity", 1, int.MaxValue);
+            Quantity = quantity;
+            MarkUpdated(updateUser, updateDate);
+        }
+
+        public void UpdateUnitPrice(decimal unitPrice, string updateUser, DateTimeOffset? updateDate = null)
+        {
+            ValidateValueRange(unitPrice, "Order Item Unit Price", 0.01m, decimal.MaxValue);
+            UnitPrice = unitPrice;
+            MarkUpdated(updateUser, updateDate);
+        }
     }
 }

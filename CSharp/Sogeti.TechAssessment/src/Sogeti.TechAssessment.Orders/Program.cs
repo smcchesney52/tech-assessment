@@ -1,8 +1,14 @@
 using System;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Sogeti.TechAssessment.Orders.Interfaces.Repositories;
+using Sogeti.TechAssessment.Orders.Interfaces.Services;
+using Sogeti.TechAssessment.Orders.Models;
+using Sogeti.TechAssessment.Orders.Repositories;
+using Sogeti.TechAssessment.Orders.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +16,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddTransient<IOrderRepository, OrderRepository>();
+builder.Services.AddTransient<IOrderService, OrderService>();
 
 var app = builder.Build();
 
@@ -22,29 +30,32 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+app.MapGet("/orders/{customerId}", async (Guid customerId, IOrderService orderService) => await orderService.GetForCustomerAsync(customerId))
+    .WithName("ListOrdersByCustomer")
+    .WithOpenApi();
 
-app.MapGet("/weatherforecast", () =>
+app.MapPost("/order", async (CreateOrderModel createOrderModel, IOrderService orderService) =>
     {
-        var forecast = Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                (
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                ))
-            .ToArray();
-        return forecast;
+        var newOrder = await orderService.CreateAsync(createOrderModel);
+        return newOrder is null ? Results.BadRequest() : Results.Created();
     })
-    .WithName("GetWeatherForecast")
+    .WithName("CreateOrder")
+    .WithOpenApi();
+
+app.MapPut("/order", async (UpdateOrderModel updateOrderModel, IOrderService orderService) =>
+    {
+        var updatedOrder = await orderService.UpdateAsync(updateOrderModel);
+        return updatedOrder is null ? Results.BadRequest() : Results.NoContent();
+    })
+    .WithName("UpdateOrder")
+    .WithOpenApi();
+
+app.MapPost("/orders/cancel", async (CancelOrderModel cancelOrderModel, IOrderService orderService) =>
+    {
+        var cancelledOrder = await orderService.CancelAsync(cancelOrderModel);
+        return cancelledOrder is null ? Results.BadRequest() : Results.NoContent();
+    })
+    .WithName("CancelOrder")
     .WithOpenApi();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

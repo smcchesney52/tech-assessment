@@ -19,7 +19,7 @@ namespace Sogeti.TechAssessment.Orders.Domain
             AddDate = resolvedAddDate;
         }
         
-        public Guid Id { get; private set; }
+        public Guid Id { get; protected set; }
         
         public string AddUser { get; private set; }
         

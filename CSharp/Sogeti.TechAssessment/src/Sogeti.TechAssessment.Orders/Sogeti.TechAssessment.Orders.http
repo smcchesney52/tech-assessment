@@ -1,6 +1,6 @@
-@Sogeti.TechAssessment.Orders_HostAddress = http://localhost:5009
+@Sogeti.TechAssessment.Orders_HostAddress = https://localhost:52301
 
-GET {{Sogeti.TechAssessment.Orders_HostAddress}}/weatherforecast/
+GET {{Sogeti.TechAssessment.Orders_HostAddress}}/orders/2fe0e60c-98a4-430b-84fb-e08e965935cf
 Accept: application/json
 
 ###

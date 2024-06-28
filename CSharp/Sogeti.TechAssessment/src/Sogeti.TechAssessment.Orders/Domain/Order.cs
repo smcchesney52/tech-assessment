@@ -26,6 +26,8 @@ namespace Sogeti.TechAssessment.Orders.Domain
         
         public Guid CustomerId { get; private set; }
         
+        public Customer Customer { get; internal set; }
+        
         public DateTimeOffset OrderDate { get; private set; }
         
         public OrderStatus Status { get; private set; }
@@ -37,7 +39,7 @@ namespace Sogeti.TechAssessment.Orders.Domain
         public void AddItem(Guid productId, int quantity, decimal unitPrice, string addUser,
             DateTimeOffset? addDate = null)
         {
-            var itemNumber = (byte)(_items.Count + 1);
+            var itemNumber = _items.Count + 1;
             _items.Add(new OrderItem(Id, productId, itemNumber, quantity, unitPrice, addUser, addDate));
         }
 
@@ -59,6 +61,14 @@ namespace Sogeti.TechAssessment.Orders.Domain
 
             Status = OrderStatus.Cancelled;
             MarkUpdated(updateUser, updateDate);
+        }
+
+        internal void ResetItemNumbers()
+        {
+            for (int i = 0; i < _items.Count; i++)
+            {
+                _items[i].ItemNumber = i + 1;
+            }
         }
     }
 }
