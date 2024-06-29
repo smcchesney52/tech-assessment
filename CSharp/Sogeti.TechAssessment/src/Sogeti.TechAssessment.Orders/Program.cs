@@ -1,13 +1,12 @@
 using System;
-using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Sogeti.TechAssessment.Orders.Interfaces.Repositories;
+using Sogeti.TechAssessment.Orders.Domain;
 using Sogeti.TechAssessment.Orders.Interfaces.Services;
 using Sogeti.TechAssessment.Orders.Models;
-using Sogeti.TechAssessment.Orders.Repositories;
 using Sogeti.TechAssessment.Orders.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,7 +15,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddTransient<IOrderRepository, OrderRepository>();
+builder.Services.AddDbContext<OrderContext>(o => o.UseInMemoryDatabase("Orders"));
 builder.Services.AddTransient<IOrderService, OrderService>();
 
 var app = builder.Build();

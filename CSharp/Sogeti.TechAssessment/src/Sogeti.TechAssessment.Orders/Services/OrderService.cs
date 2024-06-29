@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Sogeti.TechAssessment.Orders.Domain;
-using Sogeti.TechAssessment.Orders.Interfaces.Repositories;
 using Sogeti.TechAssessment.Orders.Interfaces.Services;
 using Sogeti.TechAssessment.Orders.Models;
 
@@ -12,12 +12,12 @@ namespace Sogeti.TechAssessment.Orders.Services
     public class OrderService : IOrderService
     {
         private readonly ILogger<OrderService> _logger;
-        private readonly IOrderRepository _orderRepository;
+        private readonly OrderContext _orderContext;
 
-        public OrderService(ILogger<OrderService> logger, IOrderRepository orderRepository)
+        public OrderService(ILogger<OrderService> logger, OrderContext orderContext)
         {
             _logger = logger;
-            _orderRepository = orderRepository;
+            _orderContext = orderContext;
         }
         
         public async Task<Order?> CreateAsync(CreateOrderModel model)
@@ -30,7 +30,8 @@ namespace Sogeti.TechAssessment.Orders.Services
                     newOrder.AddItem(item.ProductId, item.Quantity, item.UnitPrice, model.AddUser);
                 }
 
-                await _orderRepository.AddAsync(newOrder);
+                _orderContext.Orders.Add(newOrder);
+                await _orderContext.SaveChangesAsync();
                 return newOrder;
             }
             catch (Exception ex)
@@ -42,7 +43,10 @@ namespace Sogeti.TechAssessment.Orders.Services
 
         public async Task<ListOrderModel[]> GetForCustomerAsync(Guid customerId)
         {
-            var orders = await _orderRepository.GetByCustomerAsync(customerId);
+            var orders = await _orderContext.Orders
+                .Include(o => o.Customer)
+                .Where(o => o.CustomerId == customerId)
+                .ToArrayAsync();
             return orders.Select(o => new ListOrderModel
             {
                 Id = o.Id, OrderDate = o.OrderDate, CurrentStatus = o.Status.ToString(),
@@ -54,11 +58,11 @@ namespace Sogeti.TechAssessment.Orders.Services
         {
             try
             {
-                var order = await _orderRepository.GetById(model.OrderId);
+                var order = await _orderContext.Orders.FindAsync(model.OrderId);
                 if (order is not null)
                 {
                     UpdateOrderFromModel(order, model);
-                    await _orderRepository.UpdateAsync(order);
+                    await _orderContext.SaveChangesAsync();
                 }
             
                 return order;
@@ -74,11 +78,11 @@ namespace Sogeti.TechAssessment.Orders.Services
         {
             try
             {
-                var order = await _orderRepository.GetById(model.OrderId);
+                var order = await _orderContext.Orders.FindAsync(model.OrderId);
                 if (order is not null)
                 {
                     order.Cancel(model.CancelUser);
-                    await _orderRepository.UpdateAsync(order);
+                    await _orderContext.SaveChangesAsync();
                 }
 
                 return order;
